@@ -1,0 +1,21 @@
+logLevel: info
+
+mqtt:
+  brokerAddress: 1.2.3.4
+  brokerPort: 1883
+  username: username
+  password: password
+  clientId: solar-light-trigger
+  topicSolarRadiation: solarRadiation
+  topicPrefixLightState: lightState/
+
+trigger:
+  - name: indoor
+    enabled: true
+    threshold: 10.0
+    hysteresis: 1.0
+
+  - name: outdoor
+    enabled: false
+    threshold: 2.5
+    hysteresis: 1.0
