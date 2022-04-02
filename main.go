@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"os/signal"
-	"solarLightTrigger/model/configuration"
+	"solar-light-trigger/model/configuration"
 	"strconv"
 	"strings"
 	"syscall"

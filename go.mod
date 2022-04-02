@@ -1,4 +1,4 @@
-module solarLightTrigger
+module solar-light-trigger
 
 go 1.18
 
