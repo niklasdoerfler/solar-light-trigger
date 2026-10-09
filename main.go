@@ -44,14 +44,30 @@ var messageSolarRadiationHandler mqtt.MessageHandler = func(client mqtt.Client, 
 func loadConfig() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("/config")
 	viper.SetDefault("loglevel", "info")
+	viper.SetDefault("mqtt.brokerPort", 1883)
+	viper.SetDefault("mqtt.clientId", "solar-light-trigger")
+
+	if err := configuration.BindEnv(viper.GetViper()); err != nil {
+		log.Fatalf("unable to bind environment variables, %v", err)
+	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Warnf("Error reading config file, using default values. %s", err)
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Info("No config file found, using environment variables and default values.")
+		} else {
+			log.Warnf("Error reading config file, using environment variables and default values. %s", err)
+		}
 	}
 	err := viper.Unmarshal(&config)
 	if err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
+	}
+
+	config.Trigger, err = configuration.ApplyTriggerEnv(config.Trigger)
+	if err != nil {
+		log.Fatalf("unable to read trigger config from environment, %v", err)
 	}
 
 	logLevel, err := log.ParseLevel(config.LogLevel)
@@ -144,7 +160,7 @@ func main() {
 
 	loadConfig()
 
-	keepAlive := make(chan os.Signal)
+	keepAlive := make(chan os.Signal, 1)
 	signal.Notify(keepAlive, os.Interrupt, syscall.SIGTERM)
 	SetupMqttConnection()
 	<-keepAlive
